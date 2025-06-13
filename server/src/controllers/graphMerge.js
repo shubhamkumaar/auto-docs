@@ -3,23 +3,23 @@ import { GoogleGenAI, Type } from "@google/genai";
 const ai = new GoogleGenAI({ apiKey: process.env.GENAI_API_KEY });
 
 async function graphMerge(req, res) {
-  const flowcharts = req.body.flowcharts;
-  const config = {
-    thinkingConfig: {
-      thinkingBudget: 0,
-    },
-    responseMimeType: "application/json",
-    responseSchema: {
-      type: Type.OBJECT,
-      properties: {
-        flowchart: {
-          type: Type.STRING,
+    const flowcharts = req.body.flowcharts;
+    const config = {
+        thinkingConfig: {
+            thinkingBudget: 0,
         },
-      },
-    },
-  };
-  const model = "gemini-2.5-flash-preview-04-17";
-  const contents = `
+        responseMimeType: "application/json",
+        responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+                flowchart: {
+                    type: Type.STRING,
+                },
+            },
+        },
+    };
+    const model = "gemini-2.5-flash-preview-04-17";
+    const contents = `
 ${flowcharts}  
 Above given flowcharts are the individual page chart merge it to make the flowchart of the project
 Instructions:-
@@ -38,18 +38,18 @@ Expecting 'SEMI', 'NEWLINE', 'EOF', 'AMP', 'START_LINK', 'LINK', 'LINK_ID', got 
 Expecting 'SQE', 'DOUBLECIRCLEEND', 'PE', '-)', 'STADIUMEND', 'SUBROUTINEEND', 'PIPE', 'CYLINDEREND', 'DIAMOND_STOP', 'TAGEND', 'TRAPEND', 'INVTRAPEND', 'UNICODE_TEXT', 'TEXT', 'TAGSTART', got 'PS'', 
 
 - Don't make above code errors strictly follow the code rules`;
-  
-const response = await ai.models.generateContent({
-    model,
-    contents,
-    config,
-  });
 
-  if (response.error) {
-    return res.status(500).json({ error: response.error.message });
-  }
+    const response = await ai.models.generateContent({
+        model,
+        contents,
+        config,
+    });
 
-  const flowchart = JSON.parse(response.text).flowchart;
-  return res.status(200).json({ flowchart });
+    if (response.error) {
+        return res.status(500).json({ error: response.error.message });
+    }
+
+    const flowchart = JSON.parse(response.text).flowchart;
+    return res.status(200).json({ flowchart });
 }
 export { graphMerge };

@@ -3,11 +3,11 @@ import { GoogleGenAI, Type } from "@google/genai";
 const ai = new GoogleGenAI({ apiKey: process.env.GENAI_API_KEY });
 
 async function generateDocument(req, res) {
-  const code = req.body.code;
+    const code = req.body.code;
 
-  const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash-preview-04-17",
-    contents: `
+    const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash-preview-04-17",
+        contents: `
     I have shared my code file below. Write the documentation
 
 Instructions:-
@@ -48,53 +48,55 @@ Documentation format:-
 
 Codes used to make documentation and graph:-
 ${code}`,
-    config: {
-      thinkingConfig: {
-        thinkingBudget: 0,
-      },
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          code: {
-            type: Type.STRING,
-            description: "Strictly include the full code with documentation",
-          },
-          Document: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                function: {
-                  type: Type.STRING,
-                  description: "Name of the function with the parameters",
-                },
-                DocString: {
-                  type: Type.STRING,
-                  description:
-                    "Will contain the whole logic and the documentation string of the function",
-                },
-              },
+        config: {
+            thinkingConfig: {
+                thinkingBudget: 0,
             },
-          },
-          FlowChart: {
-            type: Type.STRING,
-            description:
-              "Mermaid code of the flowchart without any syntax errors.",
-          },
+            responseMimeType: "application/json",
+            responseSchema: {
+                type: Type.OBJECT,
+                properties: {
+                    code: {
+                        type: Type.STRING,
+                        description:
+                            "Strictly include the full code with documentation",
+                    },
+                    Document: {
+                        type: Type.ARRAY,
+                        items: {
+                            type: Type.OBJECT,
+                            properties: {
+                                function: {
+                                    type: Type.STRING,
+                                    description:
+                                        "Name of the function with the parameters",
+                                },
+                                DocString: {
+                                    type: Type.STRING,
+                                    description:
+                                        "Will contain the whole logic and the documentation string of the function",
+                                },
+                            },
+                        },
+                    },
+                    FlowChart: {
+                        type: Type.STRING,
+                        description:
+                            "Mermaid code of the flowchart without any syntax errors.",
+                    },
+                },
+            },
         },
-      },
-    },
-  });
+    });
 
-  if (response.error) {
-    return res.status(500).json({ error: response.error.message });
-  }
-  if (!response.text || response.text.trim() === "") {
-    return res.status(500).json({ error: "No content generated" });
-  }
+    if (response.error) {
+        return res.status(500).json({ error: response.error.message });
+    }
+    if (!response.text || response.text.trim() === "") {
+        return res.status(500).json({ error: "No content generated" });
+    }
 
-  return res.status(200).json(JSON.parse(response.text));
+    return res.status(200).json(JSON.parse(response.text));
 }
 
 export { generateDocument };
