@@ -1,0 +1,77 @@
+{
+  "name": "llm-project-tools",
+  "displayName": "LLM Project Tools",
+  "description": "Tools to package projects for LLM analysis.",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onView:llm-tools-sidebar"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "LLM Project Tools",
+      "properties": {
+        "llm-project-tools.geminiApiKey": {
+          "type": "string",
+          "default": "",
+          "description": "Your Google AI Studio API Key for Gemini.",
+          "scope": "application"
+        }
+      }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "llm-tools-container",
+          "title": "LLM Tools",
+          "icon": "$(file-code)"
+        }
+      ]
+    },
+    "views": {
+      "llm-tools-container": [
+        {
+          "id": "llm-tools-sidebar",
+          "name": "Actions",
+          "type": "webview"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "llm-project-tools.projectToFile",
+        "title": "Project to File"
+      },
+      {
+        "command": "llm-project-tools.activeWindowToFile",
+        "title": "Active Window to File"
+      },
+      {
+        "command": "llm-project-tools.generateReadme",
+        "title": "Generate README"
+      }
+    ]
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "pretest": "npm run lint",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.6",
+    "@types/node": "18.x",
+    "@types/vscode": "^1.85.0",
+    "eslint": "^8.56.0",
+    "vscode-test": "^1.6.1"
+  },
+  "dependencies": {
+    "axios": "^1.9.0",
+    "ignore": "^5.3.1"
+  }
+}

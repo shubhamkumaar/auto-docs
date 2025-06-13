@@ -1,0 +1,29 @@
+body {
+  padding: 10px;
+  font-family: var(--vscode-font-family);
+  color: var(--vscode-editor-foreground);
+  background-color: var(--vscode-side-bar-background);
+}
+
+.action-button {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid
+    var(--vscode-button-border, var(--vscode-button-secondary-background));
+  background-color: var(--vscode-button-secondary-background);
+  color: var(--vscode-button-secondary-foreground);
+  text-align: center;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 1em;
+}
+
+.action-button:hover {
+  background-color: var(--vscode-button-secondary-hover-background);
+}
+
+.action-button:active {
+  background-color: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+}

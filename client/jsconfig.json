@@ -1,0 +1,23 @@
+// {
+// 	"compilerOptions": {
+// 		"module": "Node16",
+// 		"target": "ES2022",
+// 		"checkJs": true,  /* Typecheck .js files. */
+// 		"lib": [
+// 			"ES2022"
+// 		]
+// 	},
+// 	"exclude": [
+// 		"node_modules"
+// 	]
+// }
+
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2021",
+    "lib": ["es2021", "dom"],
+    "checkJs": true
+  },
+  "exclude": ["node_modules"]
+}
