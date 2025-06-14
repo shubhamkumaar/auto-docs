@@ -85,13 +85,14 @@ ${code}`,
                         description:
                             "Mermaid code of the flowchart without any syntax errors.",
                     },
-                    techstack:{
+                    techstack: {
                         type: Type.ARRAY,
                         items: {
                             type: Type.STRING,
-                            description: "List of technologies used in the code",
+                            description:
+                                "List of technologies used in the code",
                         },
-                    }
+                    },
                 },
             },
         },

@@ -17,7 +17,7 @@ const ALLOWED_EXTENSIONS = new Set([
   ".css",
 ]);
 const FILES_TO_IGNORE = new Set(["package-lock.json"]);
-const OUTPUT_FOLDER_NAME = "auto-docs-llm-output";
+const OUTPUT_FOLDER_NAME = "auto-docs.llm-output";
 const API_DELAY_MS = 250;
 
 function activate(context) {
@@ -26,28 +26,96 @@ function activate(context) {
   const sidebarProvider = new SidebarProvider(context.extensionUri);
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(
-      "auto-docs-sidebar",
+      "llm-tools-sidebar",
       sidebarProvider
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      "auto-docs-tools.projectToFile",
+      "llm-project-tools.projectToFile",
       projectToFileCommand
     )
   );
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      "auto-docs-tools.activeWindowToFile",
+      "llm-project-tools.activeWindowToFile",
       activeWindowToFileCommand
     )
   );
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      "auto-docs-tools.generateReadme",
+      "llm-project-tools.generateReadme",
       generateReadmeCommand
     )
+  );
+}
+
+async function generateReadmeCommand() {
+  const workspaceFolders = vscode.workspace.workspaceFolders;
+  if (!workspaceFolders) {
+    vscode.window.showErrorMessage("No project folder is open.");
+    return;
+  }
+  const projectRoot = workspaceFolders[0].uri.fsPath;
+  const projectName = path.basename(projectRoot);
+  const summaryFileName = `${projectName}.json`;
+  const summaryFilePath = path.join(
+    projectRoot,
+    OUTPUT_FOLDER_NAME,
+    summaryFileName
+  );
+
+  if (!fs.existsSync(summaryFilePath)) {
+    vscode.window.showErrorMessage(
+      `File not found: ${summaryFileName}. Please run the "Generate Project Documentation" command first.`
+    );
+    return;
+  }
+
+  await vscode.window.withProgress(
+    {
+      location: vscode.ProgressLocation.Notification,
+      title: "🤖 Generating README.md with AI...",
+      cancellable: false,
+    },
+    async (progress) => {
+      try {
+        progress.report({ message: "Reading project summary..." });
+        const summaryFileContent = fs.readFileSync(summaryFilePath, "utf8");
+        const projectData = JSON.parse(summaryFileContent);
+
+        progress.report({ message: "Calling backend API..." });
+        const response = await axios.post(
+          "http://localhost:3000/api/doc/readme",
+          projectData
+        );
+        // console.log(response);
+        if (!response.data || !response.data.readmeContent) {
+          throw new Error("Invalid response from the backend API.");
+        }
+
+        const readmeContent = response.data.readmeContent;
+        const readmeOutputPath = path.join(projectRoot, "README.md");
+
+        progress.report({ message: "Saving README.md..." });
+
+        fs.writeFileSync(readmeOutputPath, readmeContent, "utf8");
+
+        vscode.window.showInformationMessage(
+          `Successfully generated README.md in the project root.`
+        );
+
+        const fileUri = vscode.Uri.file(readmeOutputPath);
+        vscode.window.showTextDocument(fileUri);
+      } catch (error) {
+        console.error("Error generating README:", error);
+        const errorMessage = error.response?.data?.error || error.message;
+        vscode.window.showErrorMessage(
+          `Failed to generate README: ${errorMessage}`
+        );
+      }
+    }
   );
 }
 
@@ -260,11 +328,6 @@ function createDirectory(dirPath) {
 
 async function activeWindowToFileCommand() {
   vscode.window.showInformationMessage("This command is unchanged.");
-}
-async function generateReadmeCommand() {
-  vscode.window.showErrorMessage(
-    "`generateReadmeCommand` needs to be updated to use your backend API."
-  );
 }
 
 function deactivate() {}
