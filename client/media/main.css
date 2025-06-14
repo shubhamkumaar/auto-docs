@@ -11,7 +11,8 @@ body {
   margin-bottom: 10px;
   border: 1px solid
     var(--vscode-button-border, var(--vscode-button-secondary-background));
-  background-color: var(--vscode-button-secondary-background);
+  /* background-color: var(--vscode-button-secondary-background); */
+  background-color: aqua;
   color: var(--vscode-button-secondary-foreground);
   text-align: center;
   cursor: pointer;
