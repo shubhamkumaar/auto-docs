@@ -55,6 +55,10 @@
             {
                 "command": "llm-project-tools.generateReadme",
                 "title": "Generate README"
+            },
+            {
+                "command": "auto-docs.showChart",
+                "title": "Show Project Chart"
             }
         ]
     },

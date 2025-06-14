@@ -10,14 +10,18 @@ const ALLOWED_EXTENSIONS = new Set([
     ".jsx",
     ".ts",
     ".js",
-    ".json",
     ".md",
     ".py",
     ".html",
+    ".c",
+    ".cpp",
+    ".java",
+    ".go",
+    ".sh",
 ]);
 
 const FILES_TO_IGNORE = new Set(["package-lock.json"]);
-const OUTPUT_FOLDER_NAME = "auto-docs.llm-output";
+const OUTPUT_FOLDER_NAME = "auto-docs-output";
 const API_DELAY_MS = 250;
 
 function activate(context) {
@@ -49,6 +53,55 @@ function activate(context) {
             generateReadmeCommand
         )
     );
+    context.subscriptions.push(
+        vscode.commands.registerCommand("auto-docs.showChart", () => {
+            showChartCommand(context);
+        })
+    );
+}
+
+async function showChartCommand(context) {
+    vscode.window.showInformationMessage(
+        "This command is unchanged. It will show a flow chart of the project."
+    );
+    const panel = vscode.window.createWebviewPanel(
+        "auto-docs",
+        "Project Flow Chart",
+        vscode.ViewColumn.One,
+        {
+            enableScripts: true,
+            localResourceRoots: [
+                vscode.Uri.file(path.join(context.extensionPath, "media")),
+            ],
+        }
+    );
+
+    // And set its HTML content
+    const mermaidPath = vscode.Uri.file(
+        path.join(context.extensionPath, "media", "mermaid.min.js")
+    );
+    const mermaidUri = panel.webview.asWebviewUri(mermaidPath);
+
+    panel.webview.html = getWebviewContent(mermaidUri);
+}
+
+function getWebviewContent(mermaidUri) {
+    return `<!DOCTYPE html>
+<html>
+  <body>
+    <h2>Here is one mermaid diagram:</h2>
+    <div class="mermaid">
+graph TD
+  A[Client] --> B[Load Balancer]
+  B --> C[Server1]
+  B --> D[Server2]
+</div>
+<script src="${mermaidUri}"></script>
+<script>
+  mermaid.initialize({ startOnLoad: true });
+</script>
+  </body>
+</html>`;
 }
 
 async function generateReadmeCommand() {
@@ -176,7 +229,7 @@ async function projectToFileCommand() {
                 });
 
                 try {
-                    if(file.content.trim() === "") {
+                    if (file.content.trim() === "") {
                         console.warn(
                             `Skipping empty file: ${file.relativePath}`
                         );
@@ -235,7 +288,7 @@ async function projectToFileCommand() {
 
             const aggregatedDocuments = [];
             const techStackSet = new Set();
-
+            const flowSet = [];
             for (const response of allApiResponses) {
                 if (response.Document && Array.isArray(response.Document)) {
                     aggregatedDocuments.push(...response.Document);
@@ -246,12 +299,19 @@ async function projectToFileCommand() {
                         techStackSet.add(tech)
                     );
                 }
+                if (
+                    response.FlowChart &&
+                    typeof response.FlowChart === "string"
+                ) {
+                    flowSet.push(response.FlowChart);
+                }
             }
 
             const projectSummary = {
                 directoryStructure: directoryStructure,
                 Document: aggregatedDocuments,
                 techstack: Array.from(techStackSet),
+                flowchart: flowSet,
             };
 
             const summaryFilePath = path.join(outputDir, `${projectName}.json`);

@@ -32,7 +32,12 @@ class SidebarProvider {
                     vscode.commands.executeCommand(
                         "llm-project-tools.generateReadme"
                     );
-                    return;
+
+                case "showChart":
+                    vscode.commands.executeCommand(
+                        "auto-docs.showChart"
+                    );
+                return;
             }
         });
     }

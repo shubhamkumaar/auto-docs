@@ -12,4 +12,7 @@
     document.getElementById("readme-btn").addEventListener("click", () => {
         vscode.postMessage({ command: "generateReadme" });
     });
+    document.getElementById("create-flow-btn").addEventListener("click", () => {
+        vscode.postMessage({ command: "showChart" });
+    });
 })();
