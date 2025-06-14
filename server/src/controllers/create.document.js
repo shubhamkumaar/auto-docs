@@ -21,6 +21,7 @@ Instructions:-
 - Don't create unnecessary newlines
 - In the \`Code\` block, include the full code with the documentation
 - The \`Document\` block should contain the function name and its full documentation
+- Within the \`techstack\` block, list all the technologies used in the code
 
 Follow the output format, it's an JSON file as:-
 - Remove \`\`\`  or anything else which represents a code editor
@@ -84,6 +85,13 @@ ${code}`,
                         description:
                             "Mermaid code of the flowchart without any syntax errors.",
                     },
+                    techstack:{
+                        type: Type.ARRAY,
+                        items: {
+                            type: Type.STRING,
+                            description: "List of technologies used in the code",
+                        },
+                    }
                 },
             },
         },
