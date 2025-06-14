@@ -5,7 +5,7 @@ import { createReadme } from "../controllers/generateReadme.js";
 
 const router = Router();
 
-router.route("/").post(generateDocument);
+router.route("/doc").post(generateDocument);
 router.route("/chart").post(graphMerge);
 router.route("/readme").post(createReadme);
 export default router;

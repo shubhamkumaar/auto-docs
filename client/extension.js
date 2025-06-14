@@ -14,8 +14,8 @@ const ALLOWED_EXTENSIONS = new Set([
     ".md",
     ".py",
     ".html",
-    ".css",
 ]);
+
 const FILES_TO_IGNORE = new Set(["package-lock.json"]);
 const OUTPUT_FOLDER_NAME = "auto-docs.llm-output";
 const API_DELAY_MS = 250;
@@ -90,15 +90,15 @@ async function generateReadmeCommand() {
 
                 progress.report({ message: "Calling backend API..." });
                 const response = await axios.post(
-                    "http://localhost:3000/api/doc/readme",
+                    "http://localhost:3000/api/readme",
                     projectData
                 );
                 // console.log(response);
-                if (!response.data || !response.data.readmeContent) {
+                if (!response.data || !response.data.markdown) {
                     throw new Error("Invalid response from the backend API.");
                 }
 
-                const readmeContent = response.data.readmeContent;
+                const readmeContent = response.data.markdown;
                 const readmeOutputPath = path.join(projectRoot, "README.md");
 
                 progress.report({ message: "Saving README.md..." });
@@ -176,6 +176,12 @@ async function projectToFileCommand() {
                 });
 
                 try {
+                    if(file.content.trim() === "") {
+                        console.warn(
+                            `Skipping empty file: ${file.relativePath}`
+                        );
+                        continue;
+                    }
                     const response = await axios.post(
                         "http://localhost:3000/api/doc/",
                         {
@@ -278,7 +284,7 @@ function createIgnoreInstance(projectRoot) {
         "node_modules",
         OUTPUT_FOLDER_NAME,
         ".vscode",
-        "llm-output",
+        "auto-doc-output",
     ]);
     return ig;
 }
@@ -343,6 +349,10 @@ function getProjectFiles(projectRoot) {
             ) {
                 try {
                     const content = fs.readFileSync(filePath, "utf8");
+                    if (content.trim() === "") {
+                        console.warn(`Skipping empty file: ${filePath}`);
+                        continue;
+                    }
                     fileObjects.push({ relativePath, content });
                 } catch (e) {
                     console.warn(

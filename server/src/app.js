@@ -16,7 +16,7 @@ app.use(express.static("public"));
 
 import document from "./routes/document.router.js";
 // routes declaration
-app.use("/api/doc/", document);
+app.use("/api/", document);
 
 app.get("/", (req, res) => {
     res.send("Welcome to the API");
