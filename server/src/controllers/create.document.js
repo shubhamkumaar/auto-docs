@@ -59,8 +59,7 @@ ${code}`,
                 properties: {
                     code: {
                         type: Type.STRING,
-                        description:
-                            "Strictly include the full code with documentation",
+                        description: "Strictly include the full code with documentation",
                     },
                     Document: {
                         type: Type.ARRAY,
@@ -69,8 +68,7 @@ ${code}`,
                             properties: {
                                 function: {
                                     type: Type.STRING,
-                                    description:
-                                        "Name of the function with the parameters",
+                                    description: "Name of the function with the parameters",
                                 },
                                 DocString: {
                                     type: Type.STRING,
@@ -82,15 +80,13 @@ ${code}`,
                     },
                     FlowChart: {
                         type: Type.STRING,
-                        description:
-                            "Mermaid code of the flowchart without any syntax errors.",
+                        description: "Mermaid code of the flowchart without any syntax errors.",
                     },
                     techstack: {
                         type: Type.ARRAY,
                         items: {
                             type: Type.STRING,
-                            description:
-                                "List of technologies used in the code",
+                            description: "List of technologies used in the code",
                         },
                     },
                 },

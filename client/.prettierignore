@@ -1,7 +1,25 @@
-{
-    "singleQuote": false,
-    "bracketSpacing": true,
-    "tabWidth": 4,
-    "trailingComma": "es5",
-    "semi": true
-}
+# Ignore node_modules and build folders
+node_modules/
+dist/
+build/
+
+# Ignore system files
+.DS_Store
+
+# Ignore logs and environment configs
+*.log
+.env
+
+# Ignore specific files
+coverage/
+package-lock.json
+
+# Ignore assets
+public/assets/*
+*.png
+*.jpg
+*.svg
+
+# Ignore specific config
+custom-config/generated-schema.js
+media/

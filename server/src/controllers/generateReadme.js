@@ -4,7 +4,7 @@ async function generateFolderStructure(data) {
     const genai = new GoogleGenAI({
         apiKey: process.env.GENAI_API_KEY,
     });
-    
+
     const response = await genai.models.generateContent({
         model: "gemini-2.5-flash-preview-04-17",
         contents: `
@@ -49,7 +49,7 @@ GDG_assisT/
 
         ${data}`,
         config: {
-            responseMimeType: "text/plain"
+            responseMimeType: "text/plain",
         },
     });
     return response.text;

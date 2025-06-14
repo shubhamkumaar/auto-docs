@@ -29,40 +29,31 @@ function activate(context) {
 
     const sidebarProvider = new SidebarProvider(context.extensionUri);
     context.subscriptions.push(
-        vscode.window.registerWebviewViewProvider(
-            "llm-tools-sidebar",
-            sidebarProvider
-        )
+        vscode.window.registerWebviewViewProvider("llm-tools-sidebar", sidebarProvider),
     );
 
     context.subscriptions.push(
-        vscode.commands.registerCommand(
-            "llm-project-tools.projectToFile",
-            projectToFileCommand
-        )
+        vscode.commands.registerCommand("llm-project-tools.projectToFile", projectToFileCommand),
     );
     context.subscriptions.push(
         vscode.commands.registerCommand(
             "llm-project-tools.activeWindowToFile",
-            activeWindowToFileCommand
-        )
+            activeWindowToFileCommand,
+        ),
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand(
-            "llm-project-tools.generateReadme",
-            generateReadmeCommand
-        )
+        vscode.commands.registerCommand("llm-project-tools.generateReadme", generateReadmeCommand),
     );
-    // context.subscriptions.push(
-    //     vscode.commands.registerCommand("auto-docs.showChart", () => {
-    //         showChartCommand(context);
-    //     })
-    // );
+    context.subscriptions.push(
+        vscode.commands.registerCommand("auto-docs.showChart", () => {
+            showChartCommand(context);
+        }),
+    );
     context.subscriptions.push(
         // This is the updated command logic.
         vscode.commands.registerCommand("auto-docs.showActiveProjectFlowchart", () => {
             showFlowchartForActiveFileCommand(context);
-        })
+        }),
     );
 }
 
@@ -83,12 +74,16 @@ async function showFlowchartForActiveFileCommand(context) {
     const activeFilePath = activeEditor.document.uri.fsPath;
 
     if (!fs.existsSync(outputDir)) {
-        vscode.window.showErrorMessage(`Output directory "${OUTPUT_FOLDER_NAME}" not found. Please run the "Generate Project Documentation" command first.`);
+        vscode.window.showErrorMessage(
+            `Output directory "${OUTPUT_FOLDER_NAME}" not found. Please run the "Generate Project Documentation" command first.`,
+        );
         return;
     }
 
     if (activeFilePath.includes(outputDir)) {
-        vscode.window.showInformationMessage("This is already a generated file. Open a source code file (e.g., app.ts) to see its flowchart.");
+        vscode.window.showInformationMessage(
+            "This is already a generated file. Open a source code file (e.g., app.ts) to see its flowchart.",
+        );
         return;
     }
 
@@ -99,15 +94,23 @@ async function showFlowchartForActiveFileCommand(context) {
         const targetJsonPath = path.join(outputDir, targetJsonFileName);
 
         if (!fs.existsSync(targetJsonPath)) {
-            vscode.window.showErrorMessage(`Flowchart for "${relativePath}" not found. Please run the "Generate Project Documentation" command.`);
+            vscode.window.showErrorMessage(
+                `Flowchart for "${relativePath}" not found. Please run the "Generate Project Documentation" command.`,
+            );
             return;
         }
 
         const fileContent = fs.readFileSync(targetJsonPath, "utf8");
         const jsonData = JSON.parse(fileContent);
 
-        if (!jsonData.FlowChart || typeof jsonData.FlowChart !== "string" || jsonData.FlowChart.trim() === "") {
-            vscode.window.showErrorMessage(`The file "${targetJsonFileName}" does not contain a valid flowchart.`);
+        if (
+            !jsonData.FlowChart ||
+            typeof jsonData.FlowChart !== "string" ||
+            jsonData.FlowChart.trim() === ""
+        ) {
+            vscode.window.showErrorMessage(
+                `The file "${targetJsonFileName}" does not contain a valid flowchart.`,
+            );
             return;
         }
 
@@ -119,22 +122,19 @@ async function showFlowchartForActiveFileCommand(context) {
             vscode.ViewColumn.One,
             {
                 enableScripts: true,
-                localResourceRoots: [
-                    vscode.Uri.file(path.join(context.extensionPath, "media"))
-                ],
-            }
+                localResourceRoots: [vscode.Uri.file(path.join(context.extensionPath, "media"))],
+            },
         );
 
         const mermaidUri = panel.webview.asWebviewUri(
-            vscode.Uri.file(path.join(context.extensionPath, "media", "mermaid.min.js"))
+            vscode.Uri.file(path.join(context.extensionPath, "media", "mermaid.min.js")),
         );
 
         const panzoomUri = panel.webview.asWebviewUri(
-            vscode.Uri.file(path.join(context.extensionPath, "media", "panzoom.min.js"))
+            vscode.Uri.file(path.join(context.extensionPath, "media", "panzoom.min.js")),
         );
 
         panel.webview.html = getZoomableWebviewContent(mermaidUri, panzoomUri, mermaidCode);
-
     } catch (error) {
         console.error("Error showing active flowchart:", error);
         vscode.window.showErrorMessage(`An error occurred: ${error.message}`);
@@ -162,7 +162,7 @@ async function showFlowchartForActiveFileCommand(context) {
 //         vscode.window.showErrorMessage(`Output directory "${OUTPUT_FOLDER_NAME}" not found. Please run the "Generate Project Documentation" command first.`);
 //         return;
 //     }
-    
+
 //     // 2. Do not process files that are already in the output directory
 //     if (activeFilePath.includes(outputDir)) {
 //         vscode.window.showInformationMessage("This is already a generated file. Open a source code file (e.g., app.ts) to see its flowchart.");
@@ -213,11 +213,9 @@ async function showFlowchartForActiveFileCommand(context) {
 //     }
 // }
 
-
 /**
  * Generates the HTML for the webview with panning and zooming capabilities. (Unchanged)
  */
-
 
 function getZoomableWebviewContent(mermaidUri, panzoomUri, mermaidCode) {
     return `<!DOCTYPE html>
@@ -292,24 +290,26 @@ function getZoomableWebviewContent(mermaidUri, panzoomUri, mermaidCode) {
 //   </html>`;
 // }
 
-async function showChart() {
+async function showChartCommand(context) {
     const workspaceFolders = vscode.workspace.workspaceFolders;
     if (!workspaceFolders) {
         vscode.window.showErrorMessage("No project folder is open.");
         return;
     }
+
     const projectRoot = workspaceFolders[0].uri.fsPath;
     const projectName = path.basename(projectRoot);
     const summaryFileName = `${projectName}.json`;
-    const summaryFilePath = path.join(
+    const summaryFilePath = path.join(projectRoot, OUTPUT_FOLDER_NAME, summaryFileName);
+    const chartCacheFilePath = path.join(
         projectRoot,
         OUTPUT_FOLDER_NAME,
-        summaryFileName
+        `${projectName}_chart.json`,
     );
 
     if (!fs.existsSync(summaryFilePath)) {
         vscode.window.showErrorMessage(
-            `File not found: ${summaryFileName}. Please run the "Generate Project Documentation" command first.`
+            `File not found: ${summaryFileName}. Please run the "Generate Project Documentation" command first.`,
         );
         return;
     }
@@ -317,57 +317,66 @@ async function showChart() {
     await vscode.window.withProgress(
         {
             location: vscode.ProgressLocation.Notification,
-            title: "🤖 Generating README.md with AI...",
+            title: "📊 Generating Flowchart...",
             cancellable: false,
         },
         async (progress) => {
             try {
                 progress.report({ message: "Reading project summary..." });
-                const summaryFileContent = fs.readFileSync(
-                    summaryFilePath,
-                    "utf8"
-                );
+                const summaryFileContent = fs.readFileSync(summaryFilePath, "utf8");
                 const projectData = JSON.parse(summaryFileContent);
 
-                progress.report({ message: "Calling backend API..." });
-                // const response = await axios.post(
-                //     "http://localhost:3000/api/readme",
-                //     projectData
-                // );
-                
-                // const mermaidCode = jsonData.FlowChart;
+                let chartData;
 
-                // const panel = vscode.window.createWebviewPanel(
-                //     "activeFlowchart",
-                //     `Flowchart: ${relativePath}`,
-                //     vscode.ViewColumn.One,
-                //     {
-                //         enableScripts: true,
-                //         localResourceRoots: [
-                //             vscode.Uri.file(path.join(context.extensionPath, "media"))
-                //         ],
-                //     }
-                // );
-        
-                // const mermaidUri = panel.webview.asWebviewUri(
-                //     vscode.Uri.file(path.join(context.extensionPath, "media", "mermaid.min.js"))
-                // );
-        
-                // const panzoomUri = panel.webview.asWebviewUri(
-                //     vscode.Uri.file(path.join(context.extensionPath, "media", "panzoom.min.js"))
-                // );
-        
-                // panel.webview.html = getZoomableWebviewContent(mermaidUri, panzoomUri, mermaidCode);
+                if (fs.existsSync(chartCacheFilePath)) {
+                    progress.report({ message: "Loading chart from cache..." });
+                    const cachedContent = fs.readFileSync(chartCacheFilePath, "utf8");
+                    chartData = JSON.parse(cachedContent);
+                } else {
+                    progress.report({ message: "Calling backend API..." });
+                    const response = await axios.post(
+                        "http://localhost:3000/api/chart",
+                        projectData,
+                    );
+                    chartData = response.data;
 
-            } catch (error) {
-                console.error("Error generating README:", error);
-                const errorMessage =
-                    error.response?.data?.error || error.message;
-                vscode.window.showErrorMessage(
-                    `Failed to generate README: ${errorMessage}`
+                    fs.writeFileSync(
+                        chartCacheFilePath,
+                        JSON.stringify(chartData, null, 2),
+                        "utf8",
+                    );
+                }
+
+                const mermaidCode = chartData.FlowChart;
+
+                const panel = vscode.window.createWebviewPanel(
+                    "activeFlowchart",
+                    `Flowchart: ${projectData}`,
+                    vscode.ViewColumn.One,
+                    {
+                        enableScripts: true,
+                        localResourceRoots: [
+                            vscode.Uri.file(path.join(context.extensionPath, "media")),
+                        ],
+                    },
                 );
+
+                const mermaidUri = panel.webview.asWebviewUri(
+                    vscode.Uri.file(path.join(context.extensionPath, "media", "mermaid.min.js")),
+                );
+
+                const panzoomUri = panel.webview.asWebviewUri(
+                    vscode.Uri.file(path.join(context.extensionPath, "media", "panzoom.min.js")),
+                );
+
+                panel.webview.html = getZoomableWebviewContent(mermaidUri, panzoomUri, mermaidCode);
+                vscode.window.showInformationMessage("✅ Flowchart data ready.");
+            } catch (error) {
+                console.error("Error generating Flowchart:", error);
+                const errorMessage = error.response?.data?.error || error.message;
+                vscode.window.showErrorMessage(`Failed to generate Flowchart: ${errorMessage}`);
             }
-        }
+        },
     );
 }
 
@@ -396,24 +405,24 @@ async function showChart() {
 //     panel.webview.html = getWebviewContent(mermaidUri);
 // }
 
-function getWebviewContent(mermaidUri) {
-    return `<!DOCTYPE html>
-<html>
-  <body>
-    <h2>Here is one mermaid diagram:</h2>
-    <div class="mermaid">
-graph TD
-  A[Client] --> B[Load Balancer]
-  B --> C[Server1]
-  B --> D[Server2]
-</div>
-<script src="${mermaidUri}"></script>
-<script>
-  mermaid.initialize({ startOnLoad: true });
-</script>
-  </body>
-</html>`;
-}
+// function getWebviewContent(mermaidUri) {
+//     return `<!DOCTYPE html>
+// <html>
+//   <body>
+//     <h2>Here is one mermaid diagram:</h2>
+//     <div class="mermaid">
+// graph TD
+//   A[Client] --> B[Load Balancer]
+//   B --> C[Server1]
+//   B --> D[Server2]
+// </div>
+// <script src="${mermaidUri}"></script>
+// <script>
+//   mermaid.initialize({ startOnLoad: true });
+// </script>
+//   </body>
+// </html>`;
+// }
 
 async function generateReadmeCommand() {
     const workspaceFolders = vscode.workspace.workspaceFolders;
@@ -424,15 +433,11 @@ async function generateReadmeCommand() {
     const projectRoot = workspaceFolders[0].uri.fsPath;
     const projectName = path.basename(projectRoot);
     const summaryFileName = `${projectName}.json`;
-    const summaryFilePath = path.join(
-        projectRoot,
-        OUTPUT_FOLDER_NAME,
-        summaryFileName
-    );
+    const summaryFilePath = path.join(projectRoot, OUTPUT_FOLDER_NAME, summaryFileName);
 
     if (!fs.existsSync(summaryFilePath)) {
         vscode.window.showErrorMessage(
-            `File not found: ${summaryFileName}. Please run the "Generate Project Documentation" command first.`
+            `File not found: ${summaryFileName}. Please run the "Generate Project Documentation" command first.`,
         );
         return;
     }
@@ -446,17 +451,11 @@ async function generateReadmeCommand() {
         async (progress) => {
             try {
                 progress.report({ message: "Reading project summary..." });
-                const summaryFileContent = fs.readFileSync(
-                    summaryFilePath,
-                    "utf8"
-                );
+                const summaryFileContent = fs.readFileSync(summaryFilePath, "utf8");
                 const projectData = JSON.parse(summaryFileContent);
 
                 progress.report({ message: "Calling backend API..." });
-                const response = await axios.post(
-                    "http://localhost:3000/api/readme",
-                    projectData
-                );
+                const response = await axios.post("http://localhost:3000/api/readme", projectData);
                 // console.log(response);
                 if (!response.data || !response.data.markdown) {
                     throw new Error("Invalid response from the backend API.");
@@ -470,20 +469,17 @@ async function generateReadmeCommand() {
                 fs.writeFileSync(readmeOutputPath, readmeContent, "utf8");
 
                 vscode.window.showInformationMessage(
-                    `Successfully generated README.md in the project root.`
+                    `Successfully generated README.md in the project root.`,
                 );
 
                 const fileUri = vscode.Uri.file(readmeOutputPath);
                 vscode.window.showTextDocument(fileUri);
             } catch (error) {
                 console.error("Error generating README:", error);
-                const errorMessage =
-                    error.response?.data?.error || error.message;
-                vscode.window.showErrorMessage(
-                    `Failed to generate README: ${errorMessage}`
-                );
+                const errorMessage = error.response?.data?.error || error.message;
+                vscode.window.showErrorMessage(`Failed to generate README: ${errorMessage}`);
             }
-        }
+        },
     );
 }
 
@@ -514,9 +510,7 @@ async function projectToFileCommand() {
             const totalFiles = filesToProcess.length;
 
             if (totalFiles === 0) {
-                vscode.window.showWarningMessage(
-                    "No processable files found in the project."
-                );
+                vscode.window.showWarningMessage("No processable files found in the project.");
                 return;
             }
 
@@ -526,9 +520,7 @@ async function projectToFileCommand() {
             });
             for (let i = 0; i < totalFiles; i++) {
                 if (token.isCancellationRequested) {
-                    vscode.window.showInformationMessage(
-                        "Documentation generation cancelled."
-                    );
+                    vscode.window.showInformationMessage("Documentation generation cancelled.");
                     return;
                 }
 
@@ -541,30 +533,35 @@ async function projectToFileCommand() {
 
                 try {
                     if (file.content.trim() === "") {
-                        console.warn(
-                            `Skipping empty file: ${file.relativePath}`
-                        );
+                        console.warn(`Skipping empty file: ${file.relativePath}`);
                         continue;
                     }
-                    const response = await axios.post(
-                        "http://localhost:3000/api/doc/",
-                        {
-                            code: file.content,
-                        }
-                    );
+                    const response = await axios.post("http://localhost:3000/api/doc/", {
+                        code: file.content,
+                    });
                     if (response.data) {
-                        const safeFileName = file.relativePath.replace(
-                            /[\\/]/g,
-                            "_"
-                        );
-                        const outputFile = path.join(
-                            outputDir,
-                            `${safeFileName}.json`
-                        );
+                        if (response.data.code && typeof response.data.code === "string") {
+                            let modifiedCode = response.data.code;
+
+                            // 🔧 Example modification (you can change this logic as needed):
+                            // 1. Add a comment on top
+                            modifiedCode = `// ✨ Auto-Generated Code Documentation\n${modifiedCode}`;
+
+                            // 2. (Optional) Remove trailing whitespace
+                            modifiedCode = modifiedCode
+                                .split("\n")
+                                .map((line) => line.trimEnd())
+                                .join("\n");
+
+                            // 3. Assign it back to the response
+                            response.data.code = modifiedCode;
+                        }
+                        const safeFileName = file.relativePath.replace(/[\\/]/g, "_");
+                        const outputFile = path.join(outputDir, `${safeFileName}.json`);
                         fs.writeFileSync(
                             outputFile,
                             JSON.stringify(response.data, null, 2),
-                            "utf8"
+                            "utf8",
                         );
                         allApiResponses.push(response.data);
                     }
@@ -574,14 +571,12 @@ async function projectToFileCommand() {
                     vscode.window.showErrorMessage(errorMessage);
                 }
 
-                await new Promise((resolve) =>
-                    setTimeout(resolve, API_DELAY_MS)
-                );
+                await new Promise((resolve) => setTimeout(resolve, API_DELAY_MS));
             }
 
             if (token.isCancellationRequested) {
                 vscode.window.showInformationMessage(
-                    "Documentation generation cancelled before final summary."
+                    "Documentation generation cancelled before final summary.",
                 );
                 return;
             }
@@ -592,10 +587,7 @@ async function projectToFileCommand() {
             });
 
             const ig = createIgnoreInstance(projectRoot);
-            const directoryStructure = generateDirectoryStructure(
-                projectRoot,
-                ig
-            );
+            const directoryStructure = generateDirectoryStructure(projectRoot, ig);
 
             const aggregatedDocuments = [];
             const aggregatedFlowChart = [];
@@ -607,17 +599,12 @@ async function projectToFileCommand() {
                 }
 
                 if (response.techstack && Array.isArray(response.techstack)) {
-                    response.techstack.forEach((tech) =>
-                        techStackSet.add(tech)
-                    );
+                    response.techstack.forEach((tech) => techStackSet.add(tech));
                 }
                 if (response.FlowChart && Array.isArray(response.FlowChart)) {
                     aggregatedFlowChart.push(...response.FlowChart);
                 }
-                if (
-                    response.FlowChart &&
-                    typeof response.FlowChart === "string"
-                ) {
+                if (response.FlowChart && typeof response.FlowChart === "string") {
                     flowSet.push(response.FlowChart);
                 }
             }
@@ -627,20 +614,16 @@ async function projectToFileCommand() {
                 Document: aggregatedDocuments,
                 techstack: Array.from(techStackSet),
                 // flowchart: flowSet,
-                FlowChart: aggregatedFlowChart
+                FlowChart: aggregatedFlowChart,
             };
 
             const summaryFilePath = path.join(outputDir, `${projectName}.json`);
-            fs.writeFileSync(
-                summaryFilePath,
-                JSON.stringify(projectSummary, null, 2),
-                "utf8"
-            );
+            fs.writeFileSync(summaryFilePath, JSON.stringify(projectSummary, null, 2), "utf8");
 
             vscode.window.showInformationMessage(
-                `Docs generated! Individual files are in '${OUTPUT_FOLDER_NAME}' and the project summary is at ${summaryFilePath}`
+                `Docs generated! Individual files are in '${OUTPUT_FOLDER_NAME}' and the project summary is at ${summaryFilePath}`,
             );
-        }
+        },
     );
 }
 
@@ -655,13 +638,7 @@ function createIgnoreInstance(projectRoot) {
     if (fs.existsSync(gitignorePath)) {
         ig.add(fs.readFileSync(gitignorePath, "utf8"));
     }
-    ig.add([
-        ".git",
-        "node_modules",
-        OUTPUT_FOLDER_NAME,
-        ".vscode",
-        "auto-doc-output",
-    ]);
+    ig.add([".git", "node_modules", OUTPUT_FOLDER_NAME, ".vscode"]);
     return ig;
 }
 
@@ -682,18 +659,14 @@ function generateDirectoryStructure(dirPath, ig, projectRoot = dirPath) {
 
     for (const file of files) {
         const filePath = path.join(dirPath, file);
-        const relativePath = path
-            .relative(projectRoot, filePath)
-            .replace(/\\/g, "/");
+        const relativePath = path.relative(projectRoot, filePath).replace(/\\/g, "/");
         if (ig.ignores(relativePath)) {
             continue;
         }
 
         const stat = fs.statSync(filePath);
         if (stat.isDirectory()) {
-            node.children.push(
-                generateDirectoryStructure(filePath, ig, projectRoot)
-            );
+            node.children.push(generateDirectoryStructure(filePath, ig, projectRoot));
         } else {
             node.children.push({ name: file, type: "file" });
         }
@@ -710,19 +683,13 @@ function getProjectFiles(projectRoot) {
             const filePath = path.join(currentDir, file);
             const relativePath = path.relative(projectRoot, filePath);
             const normalizedRelativePath = relativePath.replace(/\\/g, "/");
-            if (
-                ig.ignores(normalizedRelativePath) ||
-                FILES_TO_IGNORE.has(path.basename(file))
-            ) {
+            if (ig.ignores(normalizedRelativePath) || FILES_TO_IGNORE.has(path.basename(file))) {
                 continue;
             }
             const stat = fs.statSync(filePath);
             if (stat.isDirectory()) {
                 walk(filePath);
-            } else if (
-                stat.isFile() &&
-                ALLOWED_EXTENSIONS.has(path.extname(file))
-            ) {
+            } else if (stat.isFile() && ALLOWED_EXTENSIONS.has(path.extname(file))) {
                 try {
                     const content = fs.readFileSync(filePath, "utf8");
                     if (content.trim() === "") {
@@ -731,9 +698,7 @@ function getProjectFiles(projectRoot) {
                     }
                     fileObjects.push({ relativePath, content });
                 } catch (e) {
-                    console.warn(
-                        `Could not read file ${filePath}: ${e.message}`
-                    );
+                    console.warn(`Could not read file ${filePath}: ${e.message}`);
                 }
             }
         }

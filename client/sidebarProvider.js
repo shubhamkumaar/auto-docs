@@ -19,39 +19,29 @@ class SidebarProvider {
         webviewView.webview.onDidReceiveMessage((message) => {
             switch (message.command) {
                 case "projectToFile":
-                    vscode.commands.executeCommand(
-                        "llm-project-tools.projectToFile"
-                    );
+                    vscode.commands.executeCommand("llm-project-tools.projectToFile");
                     return;
                 case "activeWindowToFile":
-                    vscode.commands.executeCommand(
-                        "llm-project-tools.activeWindowToFile"
-                    );
+                    vscode.commands.executeCommand("llm-project-tools.activeWindowToFile");
                     return;
                 case "generateReadme":
-                    vscode.commands.executeCommand(
-                        "llm-project-tools.generateReadme"
-                    );
+                    vscode.commands.executeCommand("llm-project-tools.generateReadme");
 
                 case "showChart":
-                    vscode.commands.executeCommand(
-                        "auto-docs.showChart"
-                    );
-                case 'showActiveProjectFlowchart':
-                    vscode.commands.executeCommand(
-                        "auto-docs.showActiveProjectFlowchart"
-                    );
-                return;
+                    vscode.commands.executeCommand("auto-docs.showChart");
+                case "showActiveProjectFlowchart":
+                    vscode.commands.executeCommand("auto-docs.showActiveProjectFlowchart");
+                    return;
             }
         });
     }
 
     _getHtmlForWebview(webview) {
         const scriptUri = webview.asWebviewUri(
-            vscode.Uri.joinPath(this._extensionUri, "media", "main.js")
+            vscode.Uri.joinPath(this._extensionUri, "media", "main.js"),
         );
         const styleUri = webview.asWebviewUri(
-            vscode.Uri.joinPath(this._extensionUri, "media", "main.css")
+            vscode.Uri.joinPath(this._extensionUri, "media", "main.css"),
         );
 
         // Use a nonce to only allow specific scripts to be run
@@ -69,8 +59,8 @@ class SidebarProvider {
             <body>
                 <button class="action-button" id="project-btn">Project Doc</button>
                 <button class="action-button" id="window-btn">Active Tab Doc</button>
-                <button class="action-button" id="activeTab-flow-btn">Active Tab Flow</button>
-                <button class="action-button" id="create-flow-btn">Get Flow Chart</button>
+                <button class="action-button" id="activeTab-flow-btn">Active Tab FlowChart</button>
+                <button class="action-button" id="create-flow-btn">Get FlowChart</button>
                 <button class="action-button" id="readme-btn">Get README.md</button>
 
                 <script nonce="${nonce}" src="${scriptUri}"></script>
@@ -81,8 +71,7 @@ class SidebarProvider {
 
 function getNonce() {
     let text = "";
-    const possible =
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     for (let i = 0; i < 32; i++) {
         text += possible.charAt(Math.floor(Math.random() * possible.length));
     }

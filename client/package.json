@@ -1,7 +1,7 @@
 {
-    "name": "llm-project-tools",
-    "displayName": "LLM Project Tools",
-    "description": "Tools to package projects for LLM analysis.",
+    "name": "auto-docs",
+    "displayName": "Auto-Docs",
+    "description": "Tools to generate documentation and project insights using Google Gemini AI.",
     "version": "0.0.1",
     "engines": {
         "vscode": "^1.85.0"
@@ -10,12 +10,12 @@
         "Other"
     ],
     "activationEvents": [
-        "onView:llm-tools-sidebar"
+        "onView:auto-docs-sidebar"
     ],
     "main": "./extension.js",
     "contributes": {
         "configuration": {
-            "title": "LLM Project Tools",
+            "title": "Auto-Docs",
             "properties": {
                 "llm-project-tools.geminiApiKey": {
                     "type": "string",
@@ -29,7 +29,7 @@
             "activitybar": [
                 {
                     "id": "llm-tools-container",
-                    "title": "LLM Tools",
+                    "title": "Auto-Docs",
                     "icon": "$(file-code)"
                 }
             ]
