@@ -3,7 +3,9 @@ import { GoogleGenAI, Type } from "@google/genai";
 const ai = new GoogleGenAI({ apiKey: process.env.GENAI_API_KEY });
 
 async function graphMerge(req, res) {
-    const flowcharts = req.body.flowcharts;
+    const flowcharts = req.body.FlowChart;
+    console.log(flowcharts);
+    
     const config = {
         thinkingConfig: {
             thinkingBudget: 0,

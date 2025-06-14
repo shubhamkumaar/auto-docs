@@ -19,7 +19,8 @@ Instructions:-
 - Create a dependency tree/graph within the \`FlowChart\` block
 - Make a perfect flowchart and code in Mermaid code only
 - Don't create unnecessary newlines
-- In the \`Code\` block, include the full code with the documentation
+- In the \`Code\` block, include the full code with the code docstring
+- Don't include // ✨ Auto-Generated Code Documentation
 - The \`Document\` block should contain the function name and its full documentation
 - Within the \`techstack\` block, list all the technologies used in the code
 

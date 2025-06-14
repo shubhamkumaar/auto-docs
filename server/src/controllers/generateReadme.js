@@ -57,8 +57,8 @@ GDG_assisT/
 
 async function createReadme(req, res) {
     // Example dummy response for frontend testing
-    const data = req.body;
-    const README = generateFolderStructure(JSON.stringify(data));
+    const {directoryStructure,Document,techstack} = req.body;
+    const README = generateFolderStructure(JSON.stringify({directoryStructure,Document,techstack}));
 
     res.json({
         markdown: await README,

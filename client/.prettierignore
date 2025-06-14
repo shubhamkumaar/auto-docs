@@ -23,3 +23,4 @@ public/assets/*
 # Ignore specific config
 custom-config/generated-schema.js
 media/
+mermaid.min.js

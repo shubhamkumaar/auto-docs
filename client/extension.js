@@ -141,82 +141,6 @@ async function showFlowchartForActiveFileCommand(context) {
     }
 }
 
-// async function showFlowchartForActiveFileCommand(context) {
-//     const activeEditor = vscode.window.activeTextEditor;
-//     if (!activeEditor) {
-//         vscode.window.showErrorMessage("No active editor found.");
-//         return;
-//     }
-
-//     const workspaceFolders = vscode.workspace.workspaceFolders;
-//     if (!workspaceFolders) {
-//         vscode.window.showErrorMessage("Please open a project folder.");
-//         return;
-//     }
-//     const projectRoot = workspaceFolders[0].uri.fsPath;
-//     const outputDir = path.join(projectRoot, OUTPUT_FOLDER_NAME);
-//     const activeFilePath = activeEditor.document.uri.fsPath;
-
-//     // 1. Check if the output directory exists
-//     if (!fs.existsSync(outputDir)) {
-//         vscode.window.showErrorMessage(`Output directory "${OUTPUT_FOLDER_NAME}" not found. Please run the "Generate Project Documentation" command first.`);
-//         return;
-//     }
-
-//     // 2. Do not process files that are already in the output directory
-//     if (activeFilePath.includes(outputDir)) {
-//         vscode.window.showInformationMessage("This is already a generated file. Open a source code file (e.g., app.ts) to see its flowchart.");
-//         return;
-//     }
-
-//     try {
-//         // 3. Construct the expected JSON filename from the active source file's path
-//         const relativePath = path.relative(projectRoot, activeFilePath);
-//         const safeFileName = relativePath.replace(/[\\/]/g, "_");
-//         const targetJsonFileName = `${safeFileName}.json`;
-//         const targetJsonPath = path.join(outputDir, targetJsonFileName);
-
-//         // 4. Check if the corresponding JSON file exists
-//         if (!fs.existsSync(targetJsonPath)) {
-//             vscode.window.showErrorMessage(`Flowchart for "${relativePath}" not found. Please run the "Generate Project Documentation" command.`);
-//             return;
-//         }
-
-//         // 5. Read the JSON file and extract the flowchart
-//         const fileContent = fs.readFileSync(targetJsonPath, "utf8");
-//         const jsonData = JSON.parse(fileContent);
-
-//         if (!jsonData.FlowChart || typeof jsonData.FlowChart !== "string" || jsonData.FlowChart.trim() === "") {
-//             vscode.window.showErrorMessage(`The file "${targetJsonFileName}" does not contain a valid flowchart.`);
-//             return;
-//         }
-//         const mermaidCode = jsonData.FlowChart;
-
-//         // 6. Create and show the webview panel
-//         const panel = vscode.window.createWebviewPanel(
-//             "activeFlowchart",
-//             `Flowchart: ${relativePath}`,
-//             vscode.ViewColumn.One, {
-//                 enableScripts: true,
-//                 localResourceRoots: [vscode.Uri.file(path.join(context.extensionPath, "media"))],
-//             }
-//         );
-
-//         const mermaidUri = panel.webview.asWebviewUri(vscode.Uri.file(path.join(context.extensionPath, "media", "mermaid.min.js")));
-//         const panzoomUri = panel.webview.asWebviewUri(vscode.Uri.parse("https://cdn.jsdelivr.net/npm/@panzoom/panzoom/dist/panzoom.min.js"));
-
-//         panel.webview.html = getZoomableWebviewContent(mermaidUri, panzoomUri, mermaidCode);
-
-//     } catch (error) {
-//         console.error("Error showing active flowchart:", error);
-//         vscode.window.showErrorMessage(`An error occurred: ${error.message}`);
-//     }
-// }
-
-/**
- * Generates the HTML for the webview with panning and zooming capabilities. (Unchanged)
- */
-
 function getZoomableWebviewContent(mermaidUri, panzoomUri, mermaidCode) {
     return `<!DOCTYPE html>
   <html lang="en">
@@ -253,42 +177,6 @@ function getZoomableWebviewContent(mermaidUri, panzoomUri, mermaidCode) {
   </body>
   </html>`;
 }
-
-// function getZoomableWebviewContent(mermaidUri, panzoomUri, mermaidCode) {
-//     return `<!DOCTYPE html>
-//   <html lang="en">
-//   <head>
-//       <meta charset="UTF-8">
-//       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-//       <title>Flowchart Viewer</title>
-//       <style>
-//         html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #222; }
-//         #scene { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; cursor: move; }
-//         .mermaid { background-color: white; padding: 20px; border-radius: 8px; }
-//       </style>
-//   </head>
-//   <body>
-//     <div id="scene">
-//         <div class="mermaid">
-//           ${mermaidCode}
-//         </div>
-//     </div>
-//     <script src="${mermaidUri}"></script>
-//     <script src="${panzoomUri}"></script>
-//     <script>
-//       mermaid.initialize({ startOnLoad: true, theme: 'default', securityLevel: 'loose' });
-//       setTimeout(() => {
-//         const scene = document.querySelector('#scene');
-//         const mermaidDiv = document.querySelector('.mermaid');
-//         if (scene && mermaidDiv) {
-//             const pz = Panzoom(mermaidDiv, { maxScale: 5, minScale: 0.3, canvas: true });
-//             scene.addEventListener('wheel', pz.zoomWithWheel);
-//         }
-//       }, 200);
-//     </script>
-//   </body>
-//   </html>`;
-// }
 
 async function showChartCommand(context) {
     const workspaceFolders = vscode.workspace.workspaceFolders;
@@ -335,7 +223,7 @@ async function showChartCommand(context) {
                 } else {
                     progress.report({ message: "Calling backend API..." });
                     const response = await axios.post(
-                        "http://localhost:3000/api/chart",
+                        "http://ad.shub0.me/api/chart",
                         projectData,
                     );
                     chartData = response.data;
@@ -347,7 +235,7 @@ async function showChartCommand(context) {
                     );
                 }
 
-                const mermaidCode = chartData.FlowChart;
+                const mermaidCode = chartData.flowchart;
 
                 const panel = vscode.window.createWebviewPanel(
                     "activeFlowchart",
@@ -380,50 +268,6 @@ async function showChartCommand(context) {
     );
 }
 
-// async function showChartCommand(context) {
-//     vscode.window.showInformationMessage(
-//         "This command is unchanged. It will show a flow chart of the project."
-//     );
-//     const panel = vscode.window.createWebviewPanel(
-//         "auto-docs",
-//         "Project Flow Chart",
-//         vscode.ViewColumn.One,
-//         {
-//             enableScripts: true,
-//             localResourceRoots: [
-//                 vscode.Uri.file(path.join(context.extensionPath, "media")),
-//             ],
-//         }
-//     );
-
-//     // And set its HTML content
-//     const mermaidPath = vscode.Uri.file(
-//         path.join(context.extensionPath, "media", "mermaid.min.js")
-//     );
-//     const mermaidUri = panel.webview.asWebviewUri(mermaidPath);
-
-//     panel.webview.html = getWebviewContent(mermaidUri);
-// }
-
-// function getWebviewContent(mermaidUri) {
-//     return `<!DOCTYPE html>
-// <html>
-//   <body>
-//     <h2>Here is one mermaid diagram:</h2>
-//     <div class="mermaid">
-// graph TD
-//   A[Client] --> B[Load Balancer]
-//   B --> C[Server1]
-//   B --> D[Server2]
-// </div>
-// <script src="${mermaidUri}"></script>
-// <script>
-//   mermaid.initialize({ startOnLoad: true });
-// </script>
-//   </body>
-// </html>`;
-// }
-
 async function generateReadmeCommand() {
     const workspaceFolders = vscode.workspace.workspaceFolders;
     if (!workspaceFolders) {
@@ -455,7 +299,7 @@ async function generateReadmeCommand() {
                 const projectData = JSON.parse(summaryFileContent);
 
                 progress.report({ message: "Calling backend API..." });
-                const response = await axios.post("http://localhost:3000/api/readme", projectData);
+                const response = await axios.post("http://ad.shub0.me/api/readme", projectData);
                 // console.log(response);
                 if (!response.data || !response.data.markdown) {
                     throw new Error("Invalid response from the backend API.");
@@ -466,7 +310,11 @@ async function generateReadmeCommand() {
 
                 progress.report({ message: "Saving README.md..." });
 
-                fs.writeFileSync(readmeOutputPath, readmeContent, "utf8");
+                fs.writeFileSync(
+                    readmeOutputPath,
+                    readmeContent.trim().replace("```markdown", ""),
+                    "utf8",
+                );
 
                 vscode.window.showInformationMessage(
                     `Successfully generated README.md in the project root.`,
@@ -496,6 +344,7 @@ async function projectToFileCommand() {
     const projectRoot = workspaceFolders[0].uri.fsPath;
     const projectName = path.basename(projectRoot);
     const outputDir = path.join(projectRoot, OUTPUT_FOLDER_NAME);
+
     createDirectory(outputDir);
 
     await vscode.window.withProgress(
@@ -530,32 +379,41 @@ async function projectToFileCommand() {
                     message: `(${i + 1}/${totalFiles}) ${file.relativePath}`,
                     increment: increment,
                 });
-
+                const safeFileName = file.relativePath.replace(/[\\/]/g, "_");
+                const outputFile = path.join(outputDir, `${safeFileName}.json`);
+                if (fs.existsSync(outputFile)) {
+                    console.log(
+                        `🔁 Skipping API call: using cached response for ${file.relativePath}`,
+                    );
+                    const cachedResponse = JSON.parse(fs.readFileSync(outputFile, "utf8"));
+                    allApiResponses.push(cachedResponse);
+                    continue;
+                }
                 try {
                     if (file.content.trim() === "") {
                         console.warn(`Skipping empty file: ${file.relativePath}`);
                         continue;
                     }
-                    const response = await axios.post("http://localhost:3000/api/doc/", {
+                    const response = await axios.post("http://ad.shub0.me/api//api/doc/", {
                         code: file.content,
                     });
                     if (response.data) {
-                        if (response.data.code && typeof response.data.code === "string") {
-                            let modifiedCode = response.data.code;
+                        // if (response.data.code && typeof response.data.code === "string") {
+                        //     let modifiedCode = response.data.code;
 
-                            // 🔧 Example modification (you can change this logic as needed):
-                            // 1. Add a comment on top
-                            modifiedCode = `// ✨ Auto-Generated Code Documentation\n${modifiedCode}`;
+                        //     // 🔧 Example modification (you can change this logic as needed):
+                        //     // 1. Add a comment on top
+                        //     modifiedCode = `// ✨ Auto-Generated Code Documentation\n${modifiedCode}`;
 
-                            // 2. (Optional) Remove trailing whitespace
-                            modifiedCode = modifiedCode
-                                .split("\n")
-                                .map((line) => line.trimEnd())
-                                .join("\n");
+                        //     // 2. (Optional) Remove trailing whitespace
+                        //     modifiedCode = modifiedCode
+                        //         .split("\n")
+                        //         .map((line) => line.trimEnd())
+                        //         .join("\n");
 
-                            // 3. Assign it back to the response
-                            response.data.code = modifiedCode;
-                        }
+                        //     // 3. Assign it back to the response
+                        //     response.data.code = modifiedCode;
+                        // }
                         const safeFileName = file.relativePath.replace(/[\\/]/g, "_");
                         const outputFile = path.join(outputDir, `${safeFileName}.json`);
                         fs.writeFileSync(
@@ -592,7 +450,6 @@ async function projectToFileCommand() {
             const aggregatedDocuments = [];
             const aggregatedFlowChart = [];
             const techStackSet = new Set();
-            const flowSet = [];
             for (const response of allApiResponses) {
                 if (response.Document && Array.isArray(response.Document)) {
                     aggregatedDocuments.push(...response.Document);
@@ -604,8 +461,12 @@ async function projectToFileCommand() {
                 if (response.FlowChart && Array.isArray(response.FlowChart)) {
                     aggregatedFlowChart.push(...response.FlowChart);
                 }
-                if (response.FlowChart && typeof response.FlowChart === "string") {
-                    flowSet.push(response.FlowChart);
+                if (response.FlowChart) {
+                    if (Array.isArray(response.FlowChart)) {
+                        aggregatedFlowChart.push(...response.FlowChart);
+                    } else if (typeof response.FlowChart === "string") {
+                        aggregatedFlowChart.push(response.FlowChart); // <== Fix here
+                    }
                 }
             }
 
@@ -613,7 +474,6 @@ async function projectToFileCommand() {
                 directoryStructure: directoryStructure,
                 Document: aggregatedDocuments,
                 techstack: Array.from(techStackSet),
-                // flowchart: flowSet,
                 FlowChart: aggregatedFlowChart,
             };
 
