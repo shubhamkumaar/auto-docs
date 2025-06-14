@@ -53,37 +53,348 @@ function activate(context) {
             generateReadmeCommand
         )
     );
+    // context.subscriptions.push(
+    //     vscode.commands.registerCommand("auto-docs.showChart", () => {
+    //         showChartCommand(context);
+    //     })
+    // );
     context.subscriptions.push(
-        vscode.commands.registerCommand("auto-docs.showChart", () => {
-            showChartCommand(context);
+        // This is the updated command logic.
+        vscode.commands.registerCommand("auto-docs.showActiveProjectFlowchart", () => {
+            showFlowchartForActiveFileCommand(context);
         })
     );
 }
 
-async function showChartCommand(context) {
-    vscode.window.showInformationMessage(
-        "This command is unchanged. It will show a flow chart of the project."
+async function showFlowchartForActiveFileCommand(context) {
+    const activeEditor = vscode.window.activeTextEditor;
+    if (!activeEditor) {
+        vscode.window.showErrorMessage("No active editor found.");
+        return;
+    }
+
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (!workspaceFolders) {
+        vscode.window.showErrorMessage("Please open a project folder.");
+        return;
+    }
+    const projectRoot = workspaceFolders[0].uri.fsPath;
+    const outputDir = path.join(projectRoot, OUTPUT_FOLDER_NAME);
+    const activeFilePath = activeEditor.document.uri.fsPath;
+
+    if (!fs.existsSync(outputDir)) {
+        vscode.window.showErrorMessage(`Output directory "${OUTPUT_FOLDER_NAME}" not found. Please run the "Generate Project Documentation" command first.`);
+        return;
+    }
+
+    if (activeFilePath.includes(outputDir)) {
+        vscode.window.showInformationMessage("This is already a generated file. Open a source code file (e.g., app.ts) to see its flowchart.");
+        return;
+    }
+
+    try {
+        const relativePath = path.relative(projectRoot, activeFilePath);
+        const safeFileName = relativePath.replace(/[\\/]/g, "_");
+        const targetJsonFileName = `${safeFileName}.json`;
+        const targetJsonPath = path.join(outputDir, targetJsonFileName);
+
+        if (!fs.existsSync(targetJsonPath)) {
+            vscode.window.showErrorMessage(`Flowchart for "${relativePath}" not found. Please run the "Generate Project Documentation" command.`);
+            return;
+        }
+
+        const fileContent = fs.readFileSync(targetJsonPath, "utf8");
+        const jsonData = JSON.parse(fileContent);
+
+        if (!jsonData.FlowChart || typeof jsonData.FlowChart !== "string" || jsonData.FlowChart.trim() === "") {
+            vscode.window.showErrorMessage(`The file "${targetJsonFileName}" does not contain a valid flowchart.`);
+            return;
+        }
+
+        const mermaidCode = jsonData.FlowChart;
+
+        const panel = vscode.window.createWebviewPanel(
+            "activeFlowchart",
+            `Flowchart: ${relativePath}`,
+            vscode.ViewColumn.One,
+            {
+                enableScripts: true,
+                localResourceRoots: [
+                    vscode.Uri.file(path.join(context.extensionPath, "media"))
+                ],
+            }
+        );
+
+        const mermaidUri = panel.webview.asWebviewUri(
+            vscode.Uri.file(path.join(context.extensionPath, "media", "mermaid.min.js"))
+        );
+
+        const panzoomUri = panel.webview.asWebviewUri(
+            vscode.Uri.file(path.join(context.extensionPath, "media", "panzoom.min.js"))
+        );
+
+        panel.webview.html = getZoomableWebviewContent(mermaidUri, panzoomUri, mermaidCode);
+
+    } catch (error) {
+        console.error("Error showing active flowchart:", error);
+        vscode.window.showErrorMessage(`An error occurred: ${error.message}`);
+    }
+}
+
+// async function showFlowchartForActiveFileCommand(context) {
+//     const activeEditor = vscode.window.activeTextEditor;
+//     if (!activeEditor) {
+//         vscode.window.showErrorMessage("No active editor found.");
+//         return;
+//     }
+
+//     const workspaceFolders = vscode.workspace.workspaceFolders;
+//     if (!workspaceFolders) {
+//         vscode.window.showErrorMessage("Please open a project folder.");
+//         return;
+//     }
+//     const projectRoot = workspaceFolders[0].uri.fsPath;
+//     const outputDir = path.join(projectRoot, OUTPUT_FOLDER_NAME);
+//     const activeFilePath = activeEditor.document.uri.fsPath;
+
+//     // 1. Check if the output directory exists
+//     if (!fs.existsSync(outputDir)) {
+//         vscode.window.showErrorMessage(`Output directory "${OUTPUT_FOLDER_NAME}" not found. Please run the "Generate Project Documentation" command first.`);
+//         return;
+//     }
+    
+//     // 2. Do not process files that are already in the output directory
+//     if (activeFilePath.includes(outputDir)) {
+//         vscode.window.showInformationMessage("This is already a generated file. Open a source code file (e.g., app.ts) to see its flowchart.");
+//         return;
+//     }
+
+//     try {
+//         // 3. Construct the expected JSON filename from the active source file's path
+//         const relativePath = path.relative(projectRoot, activeFilePath);
+//         const safeFileName = relativePath.replace(/[\\/]/g, "_");
+//         const targetJsonFileName = `${safeFileName}.json`;
+//         const targetJsonPath = path.join(outputDir, targetJsonFileName);
+
+//         // 4. Check if the corresponding JSON file exists
+//         if (!fs.existsSync(targetJsonPath)) {
+//             vscode.window.showErrorMessage(`Flowchart for "${relativePath}" not found. Please run the "Generate Project Documentation" command.`);
+//             return;
+//         }
+
+//         // 5. Read the JSON file and extract the flowchart
+//         const fileContent = fs.readFileSync(targetJsonPath, "utf8");
+//         const jsonData = JSON.parse(fileContent);
+
+//         if (!jsonData.FlowChart || typeof jsonData.FlowChart !== "string" || jsonData.FlowChart.trim() === "") {
+//             vscode.window.showErrorMessage(`The file "${targetJsonFileName}" does not contain a valid flowchart.`);
+//             return;
+//         }
+//         const mermaidCode = jsonData.FlowChart;
+
+//         // 6. Create and show the webview panel
+//         const panel = vscode.window.createWebviewPanel(
+//             "activeFlowchart",
+//             `Flowchart: ${relativePath}`,
+//             vscode.ViewColumn.One, {
+//                 enableScripts: true,
+//                 localResourceRoots: [vscode.Uri.file(path.join(context.extensionPath, "media"))],
+//             }
+//         );
+
+//         const mermaidUri = panel.webview.asWebviewUri(vscode.Uri.file(path.join(context.extensionPath, "media", "mermaid.min.js")));
+//         const panzoomUri = panel.webview.asWebviewUri(vscode.Uri.parse("https://cdn.jsdelivr.net/npm/@panzoom/panzoom/dist/panzoom.min.js"));
+
+//         panel.webview.html = getZoomableWebviewContent(mermaidUri, panzoomUri, mermaidCode);
+
+//     } catch (error) {
+//         console.error("Error showing active flowchart:", error);
+//         vscode.window.showErrorMessage(`An error occurred: ${error.message}`);
+//     }
+// }
+
+
+/**
+ * Generates the HTML for the webview with panning and zooming capabilities. (Unchanged)
+ */
+
+
+function getZoomableWebviewContent(mermaidUri, panzoomUri, mermaidCode) {
+    return `<!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Flowchart Viewer</title>
+      <style>
+        html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #222; }
+        #scene { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; cursor: move; }
+        .mermaid { background-color: white; padding: 20px; border-radius: 8px; }
+      </style>
+  </head>
+  <body>
+    <div id="scene">
+        <div class="mermaid">
+            ${mermaidCode}
+        </div>
+    </div>
+    <script src="${mermaidUri}"></script>
+    <script src="${panzoomUri}"></script>
+    <script>
+      mermaid.initialize({ startOnLoad: true, theme: 'default', securityLevel: 'loose' });
+      setTimeout(() => {
+        mermaid.contentLoaded();
+        const scene = document.querySelector('#scene');
+        const mermaidDiv = document.querySelector('.mermaid');
+        if (scene && mermaidDiv) {
+            const pz = Panzoom(mermaidDiv, { maxScale: 5, minScale: 0.3, canvas: true });
+            scene.addEventListener('wheel', pz.zoomWithWheel);
+        }
+      }, 300);
+    </script>
+  </body>
+  </html>`;
+}
+
+// function getZoomableWebviewContent(mermaidUri, panzoomUri, mermaidCode) {
+//     return `<!DOCTYPE html>
+//   <html lang="en">
+//   <head>
+//       <meta charset="UTF-8">
+//       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+//       <title>Flowchart Viewer</title>
+//       <style>
+//         html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #222; }
+//         #scene { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; cursor: move; }
+//         .mermaid { background-color: white; padding: 20px; border-radius: 8px; }
+//       </style>
+//   </head>
+//   <body>
+//     <div id="scene">
+//         <div class="mermaid">
+//           ${mermaidCode}
+//         </div>
+//     </div>
+//     <script src="${mermaidUri}"></script>
+//     <script src="${panzoomUri}"></script>
+//     <script>
+//       mermaid.initialize({ startOnLoad: true, theme: 'default', securityLevel: 'loose' });
+//       setTimeout(() => {
+//         const scene = document.querySelector('#scene');
+//         const mermaidDiv = document.querySelector('.mermaid');
+//         if (scene && mermaidDiv) {
+//             const pz = Panzoom(mermaidDiv, { maxScale: 5, minScale: 0.3, canvas: true });
+//             scene.addEventListener('wheel', pz.zoomWithWheel);
+//         }
+//       }, 200);
+//     </script>
+//   </body>
+//   </html>`;
+// }
+
+async function showChart() {
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (!workspaceFolders) {
+        vscode.window.showErrorMessage("No project folder is open.");
+        return;
+    }
+    const projectRoot = workspaceFolders[0].uri.fsPath;
+    const projectName = path.basename(projectRoot);
+    const summaryFileName = `${projectName}.json`;
+    const summaryFilePath = path.join(
+        projectRoot,
+        OUTPUT_FOLDER_NAME,
+        summaryFileName
     );
-    const panel = vscode.window.createWebviewPanel(
-        "auto-docs",
-        "Project Flow Chart",
-        vscode.ViewColumn.One,
+
+    if (!fs.existsSync(summaryFilePath)) {
+        vscode.window.showErrorMessage(
+            `File not found: ${summaryFileName}. Please run the "Generate Project Documentation" command first.`
+        );
+        return;
+    }
+
+    await vscode.window.withProgress(
         {
-            enableScripts: true,
-            localResourceRoots: [
-                vscode.Uri.file(path.join(context.extensionPath, "media")),
-            ],
+            location: vscode.ProgressLocation.Notification,
+            title: "🤖 Generating README.md with AI...",
+            cancellable: false,
+        },
+        async (progress) => {
+            try {
+                progress.report({ message: "Reading project summary..." });
+                const summaryFileContent = fs.readFileSync(
+                    summaryFilePath,
+                    "utf8"
+                );
+                const projectData = JSON.parse(summaryFileContent);
+
+                progress.report({ message: "Calling backend API..." });
+                // const response = await axios.post(
+                //     "http://localhost:3000/api/readme",
+                //     projectData
+                // );
+                
+                // const mermaidCode = jsonData.FlowChart;
+
+                // const panel = vscode.window.createWebviewPanel(
+                //     "activeFlowchart",
+                //     `Flowchart: ${relativePath}`,
+                //     vscode.ViewColumn.One,
+                //     {
+                //         enableScripts: true,
+                //         localResourceRoots: [
+                //             vscode.Uri.file(path.join(context.extensionPath, "media"))
+                //         ],
+                //     }
+                // );
+        
+                // const mermaidUri = panel.webview.asWebviewUri(
+                //     vscode.Uri.file(path.join(context.extensionPath, "media", "mermaid.min.js"))
+                // );
+        
+                // const panzoomUri = panel.webview.asWebviewUri(
+                //     vscode.Uri.file(path.join(context.extensionPath, "media", "panzoom.min.js"))
+                // );
+        
+                // panel.webview.html = getZoomableWebviewContent(mermaidUri, panzoomUri, mermaidCode);
+
+            } catch (error) {
+                console.error("Error generating README:", error);
+                const errorMessage =
+                    error.response?.data?.error || error.message;
+                vscode.window.showErrorMessage(
+                    `Failed to generate README: ${errorMessage}`
+                );
+            }
         }
     );
-
-    // And set its HTML content
-    const mermaidPath = vscode.Uri.file(
-        path.join(context.extensionPath, "media", "mermaid.min.js")
-    );
-    const mermaidUri = panel.webview.asWebviewUri(mermaidPath);
-
-    panel.webview.html = getWebviewContent(mermaidUri);
 }
+
+// async function showChartCommand(context) {
+//     vscode.window.showInformationMessage(
+//         "This command is unchanged. It will show a flow chart of the project."
+//     );
+//     const panel = vscode.window.createWebviewPanel(
+//         "auto-docs",
+//         "Project Flow Chart",
+//         vscode.ViewColumn.One,
+//         {
+//             enableScripts: true,
+//             localResourceRoots: [
+//                 vscode.Uri.file(path.join(context.extensionPath, "media")),
+//             ],
+//         }
+//     );
+
+//     // And set its HTML content
+//     const mermaidPath = vscode.Uri.file(
+//         path.join(context.extensionPath, "media", "mermaid.min.js")
+//     );
+//     const mermaidUri = panel.webview.asWebviewUri(mermaidPath);
+
+//     panel.webview.html = getWebviewContent(mermaidUri);
+// }
 
 function getWebviewContent(mermaidUri) {
     return `<!DOCTYPE html>
@@ -287,6 +598,7 @@ async function projectToFileCommand() {
             );
 
             const aggregatedDocuments = [];
+            const aggregatedFlowChart = [];
             const techStackSet = new Set();
             const flowSet = [];
             for (const response of allApiResponses) {
@@ -298,6 +610,9 @@ async function projectToFileCommand() {
                     response.techstack.forEach((tech) =>
                         techStackSet.add(tech)
                     );
+                }
+                if (response.FlowChart && Array.isArray(response.FlowChart)) {
+                    aggregatedFlowChart.push(...response.FlowChart);
                 }
                 if (
                     response.FlowChart &&
@@ -311,7 +626,8 @@ async function projectToFileCommand() {
                 directoryStructure: directoryStructure,
                 Document: aggregatedDocuments,
                 techstack: Array.from(techStackSet),
-                flowchart: flowSet,
+                // flowchart: flowSet,
+                FlowChart: aggregatedFlowChart
             };
 
             const summaryFilePath = path.join(outputDir, `${projectName}.json`);

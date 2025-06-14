@@ -37,6 +37,10 @@ class SidebarProvider {
                     vscode.commands.executeCommand(
                         "auto-docs.showChart"
                     );
+                case 'showActiveProjectFlowchart':
+                    vscode.commands.executeCommand(
+                        "auto-docs.showActiveProjectFlowchart"
+                    );
                 return;
             }
         });

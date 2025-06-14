@@ -15,4 +15,7 @@
     document.getElementById("create-flow-btn").addEventListener("click", () => {
         vscode.postMessage({ command: "showChart" });
     });
+    document.getElementById("activeTab-flow-btn").addEventListener("click", () => {
+        vscode.postMessage({ command: "showActiveProjectFlowchart" });
+    });
 })();

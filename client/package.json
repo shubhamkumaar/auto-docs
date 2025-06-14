@@ -59,6 +59,10 @@
             {
                 "command": "auto-docs.showChart",
                 "title": "Show Project Chart"
+            },
+            {
+                "command": "auto-docs.showActiveProjectFlowchart",
+                "title": "Show Active Project Chart"
             }
         ]
     },
