@@ -28,6 +28,7 @@ Instructions:-
 - Write Mermaid code without any syntax error
 - Strictly follow the mermaidcharts code rules
 - Don't add any comments
+- Avoid making syntax errors
 
 Common Errors:-
 1. Error: Error: Parse error on line 52:

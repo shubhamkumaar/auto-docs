@@ -394,25 +394,14 @@ async function projectToFileCommand() {
                         console.warn(`Skipping empty file: ${file.relativePath}`);
                         continue;
                     }
-                    const response = await axios.post("http://ad.shub0.me/api//api/doc/", {
+                    const response = await axios.post("http://ad.shub0.me/api/doc/", {
                         code: file.content,
                     });
                     if (response.data) {
                         // if (response.data.code && typeof response.data.code === "string") {
                         //     let modifiedCode = response.data.code;
-
-                        //     // 🔧 Example modification (you can change this logic as needed):
-                        //     // 1. Add a comment on top
-                        //     modifiedCode = `// ✨ Auto-Generated Code Documentation\n${modifiedCode}`;
-
-                        //     // 2. (Optional) Remove trailing whitespace
-                        //     modifiedCode = modifiedCode
-                        //         .split("\n")
-                        //         .map((line) => line.trimEnd())
-                        //         .join("\n");
-
-                        //     // 3. Assign it back to the response
                         //     response.data.code = modifiedCode;
+                        //     fs.writeFileSync(file.fullPath, modifiedCode, "utf8");
                         // }
                         const safeFileName = file.relativePath.replace(/[\\/]/g, "_");
                         const outputFile = path.join(outputDir, `${safeFileName}.json`);

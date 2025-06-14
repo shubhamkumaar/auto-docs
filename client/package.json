@@ -3,6 +3,7 @@
     "displayName": "Auto-Docs",
     "description": "Tools to generate documentation and project insights using Google Gemini AI.",
     "version": "0.0.1",
+    "publisher":"shubhamkumar",
     "engines": {
         "vscode": "^1.85.0"
     },
