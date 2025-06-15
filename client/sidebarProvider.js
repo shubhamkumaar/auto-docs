@@ -46,10 +46,6 @@ class SidebarProvider {
         );
         
         const codiconsUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'node_modules', '@vscode/codicons', 'dist', 'codicon.css'));
-
-        const logoUri = webview.asWebviewUri(
-            vscode.Uri.joinPath(this._extensionUri, "media", "logo.svg")
-        );
     
 
         // Use a nonce to only allow specific scripts to be run
