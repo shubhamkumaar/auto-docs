@@ -1,8 +1,8 @@
 const vscode = require("vscode");
 const path = require("path");
 const fs = require("fs");
-const ignore = require("ignore");
-const axios = require("axios");
+const ignore = require('ignore');
+const axios = require('axios');
 const SidebarProvider = require("./sidebarProvider");
 
 const ALLOWED_EXTENSIONS = new Set([
@@ -304,7 +304,7 @@ async function generateReadmeCommand() {
     await vscode.window.withProgress(
         {
             location: vscode.ProgressLocation.Notification,
-            title: "🤖 Generating README.md with AI...",
+            title: "Generating README.md ...",
             cancellable: false,
         },
         async (progress) => {
@@ -336,7 +336,7 @@ async function generateReadmeCommand() {
                 );
 
                 const fileUri = vscode.Uri.file(readmeOutputPath);
-                vscode.window.showTextDocument(fileUri);
+                // vscode.window.showTextDocument(fileUri);
             } catch (error) {
                 console.error("Error generating README:", error);
                 const errorMessage = error.response?.data?.error || error.message;
@@ -409,7 +409,7 @@ async function projectToFileCommand() {
                         console.warn(`Skipping empty file: ${file.relativePath}`);
                         continue;
                     }
-                    const response = await axios.post("http://ad.shub0.me/api/doc/", {
+                    const response = await axios.post("http://localhost:3000/api/doc/", {
                         code: file.content,
                     });
                     if (response.data) {
