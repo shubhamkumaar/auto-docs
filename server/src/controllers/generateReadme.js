@@ -1,6 +1,8 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
 async function generateFolderStructure(data) {
+    console.log("Generating README.md with folder structure and tech stack...");
+    
     const genai = new GoogleGenAI({
         apiKey: process.env.GENAI_API_KEY,
     });

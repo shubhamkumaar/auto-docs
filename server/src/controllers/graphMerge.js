@@ -4,7 +4,7 @@ const ai = new GoogleGenAI({ apiKey: process.env.GENAI_API_KEY });
 
 async function graphMerge(req, res) {
     const flowcharts = req.body.FlowChart;
-    console.log(flowcharts);
+    console.log("Received flowcharts for merging");
     
     const config = {
         thinkingConfig: {

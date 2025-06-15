@@ -86,6 +86,7 @@
         "vscode-test": "^1.6.1"
     },
     "dependencies": {
+        "@panzoom/panzoom": "^4.6.0",
         "@vscode/codicons": "^0.0.36",
         "axios": "^1.9.0",
         "ignore": "^5.3.1",
