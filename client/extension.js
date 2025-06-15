@@ -487,7 +487,7 @@ function createIgnoreInstance(projectRoot) {
     if (fs.existsSync(gitignorePath)) {
         ig.add(fs.readFileSync(gitignorePath, "utf8"));
     }
-    ig.add([".git", "node_modules", OUTPUT_FOLDER_NAME, ".vscode"]);
+    ig.add([".git", "node_modules", OUTPUT_FOLDER_NAME, ".vscode",".md", ".DS_Store"]);
     return ig;
 }
 

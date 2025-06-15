@@ -4,6 +4,11 @@
     "description": "Tools to generate documentation and project insights using Google Gemini AI.",
     "version": "0.0.1",
     "publisher": "shubhamkumar",
+    "icon": "logo.png",
+    "repository": {
+  "type": "git",
+  "url": "https://github.com/shubhamkumaar/auto-docs"
+},
     "engines": {
         "vscode": "^1.85.0"
     },
