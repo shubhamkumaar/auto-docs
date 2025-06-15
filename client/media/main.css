@@ -1,36 +1,119 @@
+
 body {
-    padding: 10px;
+    background-color: var(--vscode-sideBar-background);
+    color: var(--vscode-foreground);
     font-family: var(--vscode-font-family);
-    color: var(--vscode-editor-foreground);
-    background-color: #1e2127;
+    padding: 10px 15px;
+    font-size: var(--vscode-font-size);
 }
+
+.header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--vscode-editorGroup-border);
+    padding-bottom: 10px;
+}
+
+.logo {
+    height: 24px;
+    width: 24px;
+}
+
+.header h3 {
+    margin: 0;
+    font-size: 1.2em;
+    font-weight: 600;
+    color: var(--vscode-sideBarTitle-foreground);
+}
+
+.action-group {
+    margin-bottom: 25px;
+}
+
+.action-group h4 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 12px 0;
+    font-size: 1.1em;
+    font-weight: 500;
+    color: var(--vscode-editor-foreground);
+    opacity: 0.9;
+}
+
+.icon {
+    display: inline-block;
+    width: 1.5em;
+    text-align: center;
+}
+
 
 .action-button {
     width: 100%;
-    margin-top: 10px;
-    padding: 10px;
-    margin-bottom: 10px;
-    border: 1px solid #000;
-    background-color: #5fa0c7;
-    color: #fff;
-    text-align: center;
+    border: 1px solid var(--vscode-button-border, transparent);
+    background-color: var(--vscode-button-background);
+    color: var(--vscode-button-foreground);
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    text-align: left;
     cursor: pointer;
     border-radius: 5px;
-    font-size: 1.1em;
+    font-size: 1em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: 
+        background-color 0.2s ease-in-out,
+        transform 0.15s ease-in-out,
+        box-shadow 0.2s ease-in-out;
 }
 
 .action-button:hover {
-    background-color: #3ba1e1;
-    border-color: #2a8ac0;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
-    transition:
-        background-color 0.3s ease,
-        border-color 0.3s ease,
-        box-shadow 0.3s ease;
+    background-color: var(--vscode-button-hoverBackground);
+    transform: translateY(-2px); 
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
 }
 
 .action-button:active {
-    background-color: #2a8ac0;
-    border-color: #1f6a9b;
-    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+    transform: translateY(1px);
+    box-shadow: none; 
+    transition: transform 0.05s; 
+}
+
+.action-button:focus {
+    outline: 1px solid var(--vscode-focusBorder);
+    outline-offset: 2px;
+}
+
+.action-button.loading {
+    cursor: wait;
+    opacity: 0.7;
+    background-color: var(--vscode-button-secondaryBackground);
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+.action-button.loading .icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-button.loading .icon::before {
+    content: '';
+    display: block;
+    width: 1em;
+    height: 1em;
+    border-radius: 50%;
+    border: 2px solid var(--vscode-button-foreground);
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
