@@ -162,18 +162,36 @@ function getZoomableWebviewContent(mermaidUri, panzoomUri, mermaidCode) {
     </div>
     <script src="${mermaidUri}"></script>
     <script src="${panzoomUri}"></script>
-    <script>
-      mermaid.initialize({ startOnLoad: true, theme: 'default', securityLevel: 'loose' });
-      setTimeout(() => {
-        mermaid.contentLoaded();
-        const scene = document.querySelector('#scene');
-        const mermaidDiv = document.querySelector('.mermaid');
-        if (scene && mermaidDiv) {
-            const pz = Panzoom(mermaidDiv, { maxScale: 5, minScale: 0.3, canvas: true });
-            scene.addEventListener('wheel', pz.zoomWithWheel);
-        }
-      }, 300);
-    </script>
+<script>
+  console.log("Initializing Mermaid...");
+  mermaid.initialize({ startOnLoad: true, theme: 'default', securityLevel: 'loose' });
+
+  setTimeout(() => {
+    console.log("Calling mermaid.contentLoaded()");
+    mermaid.contentLoaded();
+
+    const scene = document.querySelector('#scene');
+    const mermaidDiv = document.querySelector('.mermaid');
+
+    console.log("Scene:", scene);
+    console.log("Mermaid Div:", mermaidDiv);
+    console.log("Panzoom object:", window.Panzoom);
+
+    if (scene && mermaidDiv && window.Panzoom) {
+      const panzoomFn = window.Panzoom.default || window.Panzoom;
+      const pz = panzoomFn(mermaidDiv, {
+        maxScale: 5,
+        minScale: 0.3,
+        canvas: true,
+      });
+
+      console.log("Panzoom instance created:", pz);
+      scene.addEventListener('wheel', pz.zoomWithWheel);
+    } else {
+      console.error("Missing one of: scene, mermaidDiv, or Panzoom");
+    }
+  }, 500);
+</script>
   </body>
   </html>`;
 }
@@ -222,10 +240,7 @@ async function showChartCommand(context) {
                     chartData = JSON.parse(cachedContent);
                 } else {
                     progress.report({ message: "Calling backend API..." });
-                    const response = await axios.post(
-                        "http://ad.shub0.me/api/chart",
-                        projectData,
-                    );
+                    const response = await axios.post("http://ad.shub0.me/api/chart", projectData);
                     chartData = response.data;
 
                     fs.writeFileSync(
