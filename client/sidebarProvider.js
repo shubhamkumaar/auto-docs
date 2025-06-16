@@ -44,11 +44,18 @@ class SidebarProvider {
         );
 
         const styleMainUri = webview.asWebviewUri(
-            vscode.Uri.joinPath(this._extensionUri, "media", "main.css")
+            vscode.Uri.joinPath(this._extensionUri, "media", "main.css"),
         );
-        
-        const codiconsUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'node_modules', '@vscode/codicons', 'dist', 'codicon.css'));
-    
+
+        const codiconsUri = webview.asWebviewUri(
+            vscode.Uri.joinPath(
+                this._extensionUri,
+                "node_modules",
+                "@vscode/codicons",
+                "dist",
+                "codicon.css",
+            ),
+        );
 
         // Use a nonce to only allow specific scripts to be run
         const nonce = getNonce();

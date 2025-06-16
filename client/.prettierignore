@@ -24,3 +24,4 @@ public/assets/*
 custom-config/generated-schema.js
 media/
 mermaid.min.js
+panzoom.min.js

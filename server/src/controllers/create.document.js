@@ -5,7 +5,7 @@ const ai = new GoogleGenAI({ apiKey: process.env.GENAI_API_KEY });
 async function generateDocument(req, res) {
     const code = req.body.code;
     console.log("Received code for documentation generation");
-    
+
     const response = await ai.models.generateContent({
         model: "gemini-2.5-flash-preview-04-17",
         contents: `

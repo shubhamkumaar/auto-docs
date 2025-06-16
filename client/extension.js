@@ -1,9 +1,12 @@
 const vscode = require("vscode");
 const path = require("path");
 const fs = require("fs");
-const ignore = require('ignore');
-const axios = require('axios');
+const ignore = require("ignore");
+const axios = require("axios");
 const SidebarProvider = require("./sidebarProvider");
+
+const http = require("http");
+const httpAgent = new http.Agent({ family: 4 });
 
 const ALLOWED_EXTENSIONS = new Set([
     ".tsx",
@@ -240,7 +243,17 @@ async function showChartCommand(context) {
                     chartData = JSON.parse(cachedContent);
                 } else {
                     progress.report({ message: "Calling backend API..." });
-                    const response = await axios.post("http://ad.shub0.me/api/chart", projectData);
+                    const response = await axios.post(
+                        "http://34.83.63.134/api/chart",
+                        projectData,
+                        {
+                            httpAgent,
+                            headers: {
+                                Host: "ad.shub0.me", // Critical for virtual host routing
+                                "Content-Type": "application/json",
+                            },
+                        },
+                    );
                     chartData = response.data;
 
                     fs.writeFileSync(
@@ -273,7 +286,7 @@ async function showChartCommand(context) {
                 );
 
                 panel.webview.html = getZoomableWebviewContent(mermaidUri, panzoomUri, mermaidCode);
-                vscode.window.showInformationMessage("✅ Flowchart data ready.");
+                vscode.window.showInformationMessage("Flowchart data ready.");
             } catch (error) {
                 console.error("Error generating Flowchart:", error);
                 const errorMessage = error.response?.data?.error || error.message;
@@ -314,7 +327,13 @@ async function generateReadmeCommand() {
                 const projectData = JSON.parse(summaryFileContent);
 
                 progress.report({ message: "Calling backend API..." });
-                const response = await axios.post("http://ad.shub0.me/api/readme", projectData);
+                const response = await axios.post("http://34.83.63.134/api/readme", projectData, {
+                    httpAgent,
+                    headers: {
+                        Host: "ad.shub0.me", // Critical for virtual host routing
+                        "Content-Type": "application/json",
+                    },
+                });
                 // console.log(response);
                 if (!response.data || !response.data.markdown) {
                     throw new Error("Invalid response from the backend API.");
@@ -409,9 +428,19 @@ async function projectToFileCommand() {
                         console.warn(`Skipping empty file: ${file.relativePath}`);
                         continue;
                     }
-                    const response = await axios.post("http://localhost:3000/api/doc/", {
-                        code: file.content,
-                    });
+                    const response = await axios.post(
+                        "http://34.83.63.134/api/doc/",
+                        {
+                            code: file.content,
+                        },
+                        {
+                            httpAgent: new http.Agent({ family: 4 }),
+                            headers: {
+                                Host: "ad.shub0.me",
+                                "Content-Type": "application/json",
+                            },
+                        },
+                    );
                     if (response.data) {
                         // if (response.data.code && typeof response.data.code === "string") {
                         //     let modifiedCode = response.data.code;
@@ -502,7 +531,7 @@ function createIgnoreInstance(projectRoot) {
     if (fs.existsSync(gitignorePath)) {
         ig.add(fs.readFileSync(gitignorePath, "utf8"));
     }
-    ig.add([".git", "node_modules", OUTPUT_FOLDER_NAME, ".vscode",".md", ".DS_Store"]);
+    ig.add([".git", "node_modules", OUTPUT_FOLDER_NAME, ".vscode", ".md", ".DS_Store"]);
     return ig;
 }
 
